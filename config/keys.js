@@ -1,5 +1,5 @@
 /**
-* @Developed by @ArihantBhugari
+* @Developed by @harshpanjwani
 */
 
 module.exports = {

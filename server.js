@@ -14,8 +14,8 @@ app.get('/', (req,res) => res.send('API Runing'));
 const PORT =  process.env.PORT || 3000;
 
 //route
-app.use('/users' , require("./routes/api/users"));
-app.use('/profile' , require("./routes/api/profile"));
+app.use('/users' , require("./routes/users"));
+app.use('/profile' , require("./routes/profile"));
 //app.use('/auth' , require("./routes/api/auth"));
 //app.use('/post' , require("./routes/api/post"));
 

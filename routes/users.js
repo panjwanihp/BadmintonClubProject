@@ -6,13 +6,14 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const nodemailer = require('nodemailer');
 
-const message = require('../../utils/enum');
+const message = require('../utils/enum');
 const randtoken = require('rand-token');
-const sendEmail = require('../../utils/send_email');
+const sendEmail = require('../utils/send_email');
 
+const verifcationController = require('../api/verification');
 const {check , validationResult } = require('express-validator');
 
-const User = require('../../models/User');
+const User = require('../models/User');
 //@route   GET /users/register
 //@desc    Register user
 //@access  Public
@@ -96,4 +97,26 @@ router.post(
         }
     }
 );
+
+//Verification user
+router.get('/verify',(req,res)=>{
+    console.log(req.query.email)
+    verifcationController.verifyEmail(req.query.email,req.query.key)
+    .then(verification=>{
+        res.status(verification.code).json({
+            result: verification.result,
+            code: verification.code,
+            message: verification.message
+        })
+    })
+    .catch(verificationError=>{
+     
+        res.status(verificationError.code).json({
+            result: verificationError.result,
+            code: verificationError.code,
+            message: verificationError.message
+        })
+    })
+});
+
 module.exports = router;

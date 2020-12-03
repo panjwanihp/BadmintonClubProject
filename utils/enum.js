@@ -4,5 +4,6 @@ module.exports = {
     EMAIL_EXISTS : "Email already exists",
     VERIFICATION_LINK_FAILED: "Verification link is either wrong or expires",
     VERIFICATION_SUCCESSFULL: "Verification done, you can login now",
-    USER_NOT_FOUND_ERROR : "User not found"
+    USER_NOT_FOUND_ERROR : "User not found",
+    VERIFED : "User is already verified"
 }

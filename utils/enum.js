@@ -2,8 +2,19 @@ module.exports = {
     SERVER_ERROR : "Internal server error",
     SUCCESSFULL_REGISTRATION : "Registered successfully, A verification link has been sent to your email. Please verify your email to login.",
     EMAIL_EXISTS : "Email already exists",
-    VERIFICATION_LINK_FAILED: "Verification link is either wrong or expires",
+    VERIFICATION_LINK_FAILED: "Link is either wrong or expires",
     VERIFICATION_SUCCESSFULL: "Verification done, you can login now",
     USER_NOT_FOUND_ERROR : "User not found",
-    VERIFED : "User is already verified"
-}
+    VERIFED : "User is already verified",
+    NAME_CHECK : "Name is Required",
+    EMAIL_CHECK: "Please include a valid Email",
+    PASSWORD_CHECK : "Password is required",
+    PASSWORD_INCORRECT : "Please enter a password with 6 or more Character",
+    MOBILE_CHECK : "Mobile number should contains 10 digits",
+    USER_EXISTS : "User already exists",
+    EMAIL_SENT : "Email sent successfully",
+    INVALID_CRED : 'Invalid credentials',
+    NOT_VERIFIED : "User is not verified",
+    APPROVAL_PENDING : "Pending approval from ADMIN",
+    RESET_PASSWORD_SUCCESSFULL : "Reset Password Successful"
+ }

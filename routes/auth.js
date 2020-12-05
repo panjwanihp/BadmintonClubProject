@@ -45,7 +45,7 @@ router.post(
             
             if(!user){
                 console.log(email);
-                return res.status(400).json({errors: [{msg  : message.SERVER_ERROR}]});
+                return res.status(400).json({errors: [{msg  : message.USER_NOT_FOUND_ERROR}]});
             }
             const isMatch = await bcrypt.compare(password,user.password);
 

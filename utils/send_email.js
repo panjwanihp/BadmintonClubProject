@@ -21,7 +21,7 @@ class sendEmail {
             Transporter.sendMail(mailOpts, function (error, info) {
                 if (error) {
                     response.error = error;
-                    return new sendEmail().failureHandler(response, reject);
+                    return this.failureHandler(response, reject);
                 }
                 else {
                     response.result = 'Success';

@@ -136,18 +136,15 @@ router.post(
             var tmpToken = randtoken.generate(30);
             user.vcode = tmpToken;
             var registerEmail = new sendEmail(query, 'accountActivation', tmpToken)
-            var err = await registerEmail.email()
+            registerEmail.email()
                             .then(sent => {
                                 sent.message = message.SUCCESSFULL_REGISTRATION;
-                                //return resolve(sent)
+                                return sent;
                             })
                             .catch(sentErr => {
                                 console.log(sentErr);
                                 return sentErr;
                             })
-                           
-            if(!err){
-                console.log(err)
                 user.save()
                 const payload = {
                     user: {
@@ -165,11 +162,7 @@ router.post(
                         res.json({token});
                     }
                 );
-            }
-            else{
-                console.log(err)
-                return res.status(500).send(message.SERVER_ERROR);
-            }
+            
         }catch(err){
             console.error(err.message);
             return res.status(500).send(message.SERVER_ERROR);

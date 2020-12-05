@@ -135,34 +135,41 @@ router.post(
             var query = { "email": user.email };
             var tmpToken = randtoken.generate(30);
             user.vcode = tmpToken;
-            user.save()
             var registerEmail = new sendEmail(query, 'accountActivation', tmpToken)
-                        registerEmail.email()
+            var err = await registerEmail.email()
                             .then(sent => {
                                 sent.message = message.SUCCESSFULL_REGISTRATION;
                                 //return resolve(sent)
                             })
                             .catch(sentErr => {
                                 console.log(sentErr);
-                                //return reject(sentErr)
+                                return sentErr;
                             })
-            const payload = {
-                user: {
-                    id: user.id
-                }
-            };
-            jwt.sign(
-                payload,
-                config.get("jwtToken"),
-                {
-                    expiresIn: 36000
-                },
-                (err , token) =>{
-                    if(err) throw err;
-                    res.json({token});
-                }
-            );
-            
+                           
+            if(!err){
+                console.log(err)
+                user.save()
+                const payload = {
+                    user: {
+                        id: user.id
+                    }
+                };
+                jwt.sign(
+                    payload,
+                    config.get("jwtToken"),
+                    {
+                        expiresIn: 36000
+                    },
+                    (err , token) =>{
+                        if(err) throw err;
+                        res.json({token});
+                    }
+                );
+            }
+            else{
+                console.log(err)
+                return res.status(500).send(message.SERVER_ERROR);
+            }
         }catch(err){
             console.error(err.message);
             return res.status(500).send(message.SERVER_ERROR);

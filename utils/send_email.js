@@ -14,14 +14,14 @@ class sendEmail {
             var response = {};
             var mailOpts = {
                 from: keys.mailer.user,
-                to: this.reciever,
+                to: this.reciever.email,
                 subject: emailContent.subject,
-                text: `${emailContent.body}`+ this.reciever + `&key=` + this.token
+                text: `${emailContent.body}`+ this.reciever.email + `&key=` + this.token
             };
             Transporter.sendMail(mailOpts, function (error, info) {
                 if (error) {
                     response.error = error;
-                    return this.failureHandler(response, reject);
+                    return new sendEmail().failureHandler(response, reject);
                 }
                 else {
                     response.result = 'Success';

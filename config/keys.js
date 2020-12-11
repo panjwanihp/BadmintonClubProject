@@ -4,9 +4,9 @@
 
 module.exports = {
 	mailer: {
-		service: 'gmail', //service
-		user: 'panjwani28.harsh@gmail.com',  //username of mail service
-		pass: 'Gmail@6269', //password of mail service
-		reporting_email: "panjwani28.harsh@gmail.com" //reply mail
+		service: 'yahoo', //service
+		user: 'lets_ba@yahoo.com',  //username of mail service
+		pass: 'Dinesh@123', //password of mail service
+		reporting_email: "lets_ba@yahoo.com" //reply mail
     }
 }

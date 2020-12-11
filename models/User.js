@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
     name:{
         type: String,
         required: true
-    },
+    },  
     email:{
         type: String,
         required: true,
@@ -24,11 +24,16 @@ const userSchema = new mongoose.Schema({
         }
     },
     role: { type: String, required: false, default: "Member" },
-    status: { type: Number, required: false, default: "0" },
+    status: { type: Number, required: false, default: 0 },
     vcode: { type: String, required: false },
     date:{
         type: Date,
         default: Date.now
+    },
+    wallet:{
+        type: Number,
+        required: false,
+        default: 0
     }
 });
 

@@ -16,7 +16,7 @@ class sendEmail {
                 from: keys.mailer.user,
                 to: this.reciever.email,
                 subject: emailContent.subject,
-                text: `${emailContent.body}`+ this.reciever.email + `&key=` + this.token
+                text: `${emailContent.body}`+ this.reciever.email + `/` + this.token
             };
             Transporter.sendMail(mailOpts, function (error, info) {
                 if (error) {

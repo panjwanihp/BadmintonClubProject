@@ -16,5 +16,16 @@ module.exports = {
     INVALID_CRED : 'Invalid credentials',
     NOT_VERIFIED : "User is not verified",
     APPROVAL_PENDING : "Pending approval from ADMIN",
-    RESET_PASSWORD_SUCCESSFULL : "Reset Password Successful"
+    RESET_PASSWORD_SUCCESSFULL : "Reset Password Successful",
+    C_NAME_CHECK : "Please enter valid court name",
+    C_ST_CHECK : "Start time is required",
+    C_ET_CHECK : "End time is required",
+    C_PRICE_CHECK : "Please enter the price for court",
+    COURT_EXISTS : "COURT already exists",
+    COURT_NOT_EXISTS : "COURT does not exists",
+    INVALID_TIME_RANGE: "Please enter valid start time or start time should be less than end time",
+    B_TYPE_CHECK : "Court type is required",
+    C_ST_CHECK : "Start time is required",
+    C_ET_CHECK : "End time is required",
+    B_COURT_CHECK : "Court name is required"
  }

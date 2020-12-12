@@ -40,8 +40,11 @@ router.get('/verify',(req,res)=>{
 router.get('/resetpasswordmail',async (req,res)=>{
     var email =req.query.email;
     var user = await User.findOne({ email });
+    if(!user){
+        return res.status(400).json({errors: [{msg  : message.USER_NOT_FOUND_ERROR}]});
+    }
     var tmpToken = user.vcode;
-    var resetpassword = new sendEmail(user.email, 'resetPassword', tmpToken)
+    var resetpassword = new sendEmail(user, 'resetPassword', tmpToken)
     resetpassword.email()
         .then(sent => {
             sent.message = message.SUCCESSFULL_REGISTRATION;

@@ -17,8 +17,13 @@ router.post("/pendingApproval",auth , async (req, res) => {
         const user = await User.findById(req.user.id);
              console.log(user)
              if(user.role == 'admin'){
-                res.result = 'Success'
-                res.code = 200;
+                let users = await User.find({"status" : { $in: [ 1 ] } });
+            
+                if(!users){
+                    return res.status(400).json({errors: [message.NO_NEW_USERS_EXISTS]});
+                }
+                console.log(users);
+                res.status(200).json(users);
              }
              else{
                 res.result = 'Fail'
@@ -27,7 +32,7 @@ router.post("/pendingApproval",auth , async (req, res) => {
              return res.send()
     }catch(e){
         console.log(e)
-        res.status(500).send(message.SERVER_ERROR);
+        res.status(400).send(message.SERVER_ERROR);
     }
 })
 

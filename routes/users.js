@@ -109,7 +109,7 @@ router.post(
             let user = await User.findOne({ email });
             
             if(user){
-                return res.status(201).json({errors: [message.USER_EXISTS]});
+                return res.status(400).json({errors: [message.USER_EXISTS]});
             }
 
             //get User webtoken

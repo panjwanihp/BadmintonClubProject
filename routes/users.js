@@ -52,7 +52,7 @@ router.get('/resetpasswordmail',async (req,res)=>{
         })
         .catch(sentErr => {
             console.log(sentErr);
-            return res.status(500).send(message.SERVER_ERROR);
+            return res.status(400).send(message.SERVER_ERROR);
         })
 });
 

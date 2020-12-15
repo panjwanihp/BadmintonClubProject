@@ -27,5 +27,8 @@ module.exports = {
     B_TYPE_CHECK : "Court type is required",
     C_ST_CHECK : "Start time is required",
     C_ET_CHECK : "End time is required",
-    B_COURT_CHECK : "Court name is required"
+    B_COURT_CHECK : "Court name is required",
+    INVALID_BREAK_TIME_RANGE : "Please enter valid break times so it should not overlapping",
+    ALREADY_BOOKED_TIME_RANGE : "This is time slot either overlapping with other booking either check any other court or another timeslot",
+    BREAK_TIME_RANGE: "Booking cannot be done in break timings"
  }

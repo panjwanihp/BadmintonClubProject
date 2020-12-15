@@ -33,7 +33,11 @@ const courtSchema = new mongoose.Schema({
                 required: true
             }
         }
-    ]
+    ],
+    colour : {
+        type: String,
+        required: true
+    }
 });
 
 module.exports = Court = mongoose.model('court',courtSchema);

@@ -3,17 +3,20 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const message = require('../utils/enum');
+const timeCheck =  require('../api/timeCheck');
 const auth = require('../middleware/auth');
 const {check , validationResult } = require('express-validator');
 
 const Booking = require('../models/Booking');
 const Court = require('../models/Court');
 const { response } = require('express');
+const User = require('../models/User');
 
 router.post(
     "/", [ auth,
     [
         check('type',message.B_TYPE_CHECK).not().isEmpty(),
+        check('date',message.B_ST_CHECK).not().isEmpty(),
         check('start_time',message.B_ST_CHECK).not().isEmpty(),
         check('end_time', message.B_ET_CHECK).not().isEmpty(),        
         check('court', message.B_COURT_CHECK).not().isEmpty()
@@ -24,10 +27,10 @@ router.post(
         if(!errors.isEmpty()){
             return res.status(400).json({errors:errors.array()});
         }
-        const {type, start_time, end_time, court_full, court, players} = req.body;
+        const {type,date, start_time, end_time, court} = req.body;
         try{
             // let booking = await Booking.findOne({ court_name: court }); 
-            console.log(court);
+            console.log(req.user.id);
             let court1 = await Court.findOne({ court_name: court });
             
             if(!court1){
@@ -36,6 +39,15 @@ router.post(
             
             if(start_time > end_time){
                 return res.status(400).json({errors: [message.INVALID_TIME_RANGE]});
+            }
+            let bookings = await Booking.find({$and : [{"date" : date},{"court":court1.id}]});
+
+            if(timeCheck.checkBookingOverlapforCourt(start_time,end_time,bookings)){
+                return res.status(400).json({errors: [message.ALREADY_BOOKED_TIME_RANGE]});
+            }
+
+            if(timeCheck.checkBookingOverlapforBreak(start_time,end_time,court1.court_break)){
+                return res.status(400).json({errors: [message.BREAK_TIME_RANGE]});
             }
 
             let amount = +court1.price;
@@ -48,18 +60,18 @@ router.post(
             
             booking_obj = new Booking({
                 type,
+                date,
                 start_time,
                 end_time,
                 court_full: type == 0? true: false,
                 court: court1.id,
                 players: [{
-                    user: req.user.id,
-                    payment: [{
-                        amount
-                    }]
+                    payment: amount,
+                    user: req.user.id
+                    
                 }]
             });                        
-            
+            console.log(booking_obj)
             booking_obj.save();
             res.status(200).json(booking_obj);
         }catch(err){
@@ -73,18 +85,28 @@ router.get(
     auth, 
     async (req,res) => {
         try{
-            let booking = await Booking.find();
+            let booking = await Booking.aggregate([
+                {$match : {"date" : {$gte : timeCheck.dateFormate(new Date()),
+                        $lt : timeCheck.dateFormate(new Date().setMonth(new Date().getMonth()+6))}}},
+                {$lookup : {
+                    from: "courts",
+                    localField: "court",
+                    foreignField: "_id",
+                    as: "court"
+                    }},
+                { $unwind :  { path:"$court" }}]);
             
             // if(!booking){
             //     return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
             // }
-            
+            //console.log(booking)
             res.status(200).json(booking);
         }catch(err){
             console.error(err.message);
             return res.status(500).send(message.SERVER_ERROR);
         }
 });
+
 
 router.get(
     "/:booking_id",
@@ -110,7 +132,7 @@ router.get(
     async (req,res) => {        
         try{
             //see if court exist
-            let booking = await Booking.find({"start_time" : {$regex : ".*"+req.params.booking_date+".*"}});
+            let booking = await Booking.find({"date" : req.params.booking_date});
             
             if(!booking){
                 return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
@@ -122,42 +144,42 @@ router.get(
         }
 });
 
-router.put(
-    "/update/:court_name",
-    auth, 
-    async (req,res) => {
-        const {court_name, start_time, end_time, price, court_break} = req.body;        
-        try{
-            //see if user exist
-            let court = await Court.findOne({ court_name: req.params.court_name });
+// router.put(
+//     "/update/:booking_id",
+//     auth, 
+//     async (req,res) => {
+//         const {court_name, start_time, end_time, price, court_break} = req.body;        
+//         try{
+//             //see if user exist
+//             let booking = await Booking.findOne({ _id: req.params.booking_id });
             
-            if(!court){
-                return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
-            }
-            console.log(court);
+//             if(!court){
+//                 return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
+//             }
+//             console.log(court);
             
-            if(start_time > end_time){
-                return res.status(400).json({errors: [message.INVALID_TIME_RANGE]});
-            }
+//             if(start_time > end_time){
+//                 return res.status(400).json({errors: [message.INVALID_TIME_RANGE]});
+//             }
             
-            court_obj = {
-                "court_name": court_name ? court_name : court.court_name, 
-                "start_time" : start_time ? start_time : court.start_time, 
-                "end_time" : end_time ? end_time : court.end_time, 
-                "price" : price ? price : court.price,
-                "court_break" : court_break ? court_break : court.court_break,
-            };              
-            console.log(court_obj);
-            await Court.findOneAndUpdate(
-                { court_name: req.params.court_name },
-                { $set: court },
-                { new: true, upsert: true, setDefaultsOnInsert: true }
-            );
-            res.status(200).json(court_obj);
-        }catch(err){
-            console.error(err.message);
-            return res.status(500).send(message.SERVER_ERROR);
-        }
-});
+//             court_obj = {
+//                 "court_name": court_name ? court_name : court.court_name, 
+//                 "start_time" : start_time ? start_time : court.start_time, 
+//                 "end_time" : end_time ? end_time : court.end_time, 
+//                 "price" : price ? price : court.price,
+//                 "court_break" : court_break ? court_break : court.court_break,
+//             };              
+//             console.log(court_obj);
+//             await Court.findOneAndUpdate(
+//                 { court_name: req.params.court_name },
+//                 { $set: court },
+//                 { new: true, upsert: true, setDefaultsOnInsert: true }
+//             );
+//             res.status(200).json(court_obj);
+//         }catch(err){
+//             console.error(err.message);
+//             return res.status(500).send(message.SERVER_ERROR);
+//         }
+// });
 
 module.exports = router;

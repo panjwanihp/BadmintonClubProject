@@ -6,6 +6,10 @@ const bookingSchema = new mongoose.Schema({
         type: Number, //[0-Full, 1-single, 2-double]
         required: true
     },
+    date:{
+        type: String,
+        required: true
+    },
     start_time:{
         type: String,
         required: true
@@ -29,7 +33,11 @@ const bookingSchema = new mongoose.Schema({
             type: Schema.Types.ObjectId,
             ref: 'users'
           },
-          payment:[{}]
+          payment:{
+                type: Number,
+                required: true,
+                default: false
+          }
         }
     ],
 });

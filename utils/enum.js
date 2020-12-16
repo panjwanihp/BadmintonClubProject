@@ -30,5 +30,8 @@ module.exports = {
     B_COURT_CHECK : "Court name is required",
     INVALID_BREAK_TIME_RANGE : "Please enter valid break times so it should not overlapping",
     ALREADY_BOOKED_TIME_RANGE : "This is time slot either overlapping with other booking either check any other court or another timeslot",
-    BREAK_TIME_RANGE: "Booking cannot be done in break timings"
+    BREAK_TIME_RANGE: "Booking cannot be done in break timings",
+    BOOKING_NOT_EXISTS : "Booking doesn't exsits",
+    USER_ALREADY_BOOKED : "User Already booked for this booking",
+    MORE_NUMBER_OF_PLAYERS : "Booking type is exceed player, Please try again"
  }

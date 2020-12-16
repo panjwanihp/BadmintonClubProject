@@ -13,7 +13,7 @@ const verifcationController = require('../api/verification');
 const {check , validationResult } = require('express-validator');
 
 const User = require('../models/User');
-const { response } = require('express');
+
 
 //Verification user
 router.get('/verify',(req,res)=>{

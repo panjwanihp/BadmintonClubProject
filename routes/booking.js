@@ -181,5 +181,38 @@ router.get(
 //             return res.status(500).send(message.SERVER_ERROR);
 //         }
 // });
+router.put(
+    "/update/:booking_id",
+    auth, 
+    async (req,res) => {
+        const {amount,numofplayer} = req.body; 
+        try{
+            //see if booking
+            let booking = await Booking.findOne({ _id: req.params.booking_id });
+            if(!booking){
+                return res.status(400).json({errors: [message.BOOKING_NOT_EXISTS]});
+            }
+            if(checkPlayerAvailable(booking,req.user.id)){
+                return res.status(400).json({errors: [message.USER_ALREADY_BOOKED]});
+            }
+            if(numofplayer > (parseInt(booking.type)*2 - booking.players.length)){
+                 return res.status(400).json({errors: [message.MORE_NUMBER_OF_PLAYERS]});
+            }
+            const court_full_change = {
+                    court_full:false
+                }
+            if(numofplayer == (parseInt(booking.type)*2 - booking.players.length)){
+                court_full_change.court_full = true;
+            }
 
+            player = {
+                payment : amount,
+                user : req.user.id
+            }
+         }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+    }
+);
 module.exports = router;

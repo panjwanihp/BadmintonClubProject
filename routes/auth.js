@@ -19,7 +19,7 @@ router.get("/", auth , async (req,res) => {
         const user = await User.findById(req.user.id).select('-password');
         res.json(user);
     }catch(e){
-        res.status(500).send(message.SERVER_ERROR);
+        res.status(400).send(message.SERVER_ERROR);
     }
 });
 

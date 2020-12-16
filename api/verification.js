@@ -16,7 +16,7 @@ class verfication {
                 if (err) {
                     //return err in failure handler
                     response.error = err;
-                    response.code = 500;
+                    response.code = 400;
                     response.message = message.SERVER_ERROR;
                     return this.failureHandler(response, reject)
                 }
@@ -31,14 +31,14 @@ class verfication {
                     } else {
                         //return err in failure handler
                         response.error = null;
-                        response.code = 200;
+                        response.code = 400;
                         response.message = message.VERIFICATION_LINK_FAILED
                         return this.failureHandler(response, reject)
                     }
                 } else {
                     //return err in failure handler
                     response.error = null;
-                    response.code = 404;
+                    response.code = 400;
                     response.message = message.USER_NOT_FOUND_ERROR
                     return this.failureHandler(response, reject)
                 }

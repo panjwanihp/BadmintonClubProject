@@ -1,11 +1,10 @@
 class timeCheck {
     rangeOverlappingCheck(ranges){
-        console.log(ranges)
-        for (let i = 0; i < ranges.Length; i++)
+        for (let i = 0; i < ranges.length; i++)
         {
              for (let j = i + 1; j < ranges.Length; j++)
              {
-                 if (ranges[i].bstart_time <= ranges[j].bend_time && ranges[i].bend_time >= ranges[j].bstart_time)
+                 if (ranges[i].bstart_time < ranges[j].bend_time && ranges[i].bend_time > ranges[j].bstart_time)
                     return true;
 
              }
@@ -14,10 +13,10 @@ class timeCheck {
     }
 
     checkBookingOverlapforCourt(start_time,end_time,ranges){
-        for (let i = 0; i < ranges.Length; i++)
-        {
-                 if (start_time <= ranges[i].end_time && end_time >= ranges[i].start_time)
-                    return true;
+        for (let i = 0; i < ranges.length; i++)
+        {       
+            if (start_time < ranges[i].end_time && end_time > ranges[i].start_time)
+                return true;
 
          }
         return false;
@@ -37,9 +36,9 @@ class timeCheck {
         return date
     }
      checkBookingOverlapforBreak(start_time,end_time,ranges){
-        for (let i = 0; i < ranges.Length; i++)
+        for (let i = 0; i < ranges.length; i++)
         {
-                 if (start_time <= ranges[i].bend_time && end_time >= ranges[i].bstart_time)
+                 if (start_time < ranges[i].bend_time && end_time > ranges[i].bstart_time)
                     return true;
 
          }

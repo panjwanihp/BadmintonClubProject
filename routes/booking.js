@@ -36,17 +36,15 @@ router.post(
             if(!court1){
                 return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
             }
-            
-            if(start_time > end_time){
+            if(start_time >= end_time){
                 return res.status(400).json({errors: [message.INVALID_TIME_RANGE]});
             }
             let bookings = await Booking.find({$and : [{"date" : date},{"court":court1.id}]});
-
             if(timeCheck.checkBookingOverlapforCourt(start_time,end_time,bookings)){
                 return res.status(400).json({errors: [message.ALREADY_BOOKED_TIME_RANGE]});
             }
 
-            if(timeCheck.checkBookingOverlapforBreak(start_time,end_time,court1.court_break)){
+            if(timeCheck.checkBookingOverlapforBreak(start_time,end_time,court1.court_break) || !(start_time >= court1.start_time && start_time < court1.end_time && end_time <= court1.end_time && end_time > court1.start_time)){
                 return res.status(400).json({errors: [message.BREAK_TIME_RANGE]});
             }
 
@@ -71,7 +69,6 @@ router.post(
                     
                 }]
             });                        
-            console.log(booking_obj)
             booking_obj.save();
             res.status(200).json(booking_obj);
         }catch(err){

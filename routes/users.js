@@ -43,6 +43,9 @@ router.get('/resetpasswordmail',async (req,res)=>{
     if(!user){
         return res.status(400).json({errors: [{msg  : message.USER_NOT_FOUND_ERROR}]});
     }
+    if(user.status == 0){
+        return res.status(400).json({errors: [{msg  : message.NOT_VERIFIED}]});
+    }
     var tmpToken = user.vcode;
     var resetpassword = new sendEmail(user, 'resetPassword', tmpToken)
     resetpassword.email()

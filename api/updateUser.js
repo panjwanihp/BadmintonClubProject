@@ -17,7 +17,13 @@ class UpdateUser {
                     return this.failureHandler(response, reject)
                 }
                 if (result) {
-                    if (data.vcode == token) {
+                     if(data.status == 0){
+                        response.error = null;
+                        response.code = 400;
+                        response.message = message.NOT_VERIFIED;
+                        return this.failureHandler(response, reject)
+                    }
+                    else if (data.vcode == token) {
                         return this.updatePassword(email, password, response, resolve);
                     } else {
                         //return err in failure handler

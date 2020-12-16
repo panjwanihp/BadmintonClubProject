@@ -36,10 +36,11 @@ router.post(
             if(!court1){
                 return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
             }
-            if(start_time >= end_time){
+            if(start_time >= end_time || (date <= timeCheck.dateFormate(new Date()))){
                 return res.status(400).json({errors: [message.INVALID_TIME_RANGE]});
             }
             let bookings = await Booking.find({$and : [{"date" : date},{"court":court1.id}]});
+
             if(timeCheck.checkBookingOverlapforCourt(start_time,end_time,bookings)){
                 return res.status(400).json({errors: [message.ALREADY_BOOKED_TIME_RANGE]});
             }

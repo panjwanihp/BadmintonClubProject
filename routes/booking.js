@@ -225,7 +225,7 @@ router.put(
             //     { $push: { scores: 89 } }
             // )
 
-
+            res.status(200).json(booking_obj);
 
          }catch(err){
             console.error(err.message);

@@ -220,12 +220,15 @@ router.put(
                 court_full_change.court_full = true;
             }
             // var model = require(`../models/Booking`);
-            // Booking.update(
-            //     { _id: 1 },
-            //     { $push: { scores: 89 } }
-            // )
+            await Booking.update(
+                { _id: req.params.booking_id },
+                { $push: { players: player } ,
+                $set: {
+                    court_full : court_full_change.court_full
+                } }
+            );
 
-            res.status(200).json(booking_obj);
+            res.status(200).json({msg : "Successful"});
 
          }catch(err){
             console.error(err.message);

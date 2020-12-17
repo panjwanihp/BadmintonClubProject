@@ -59,8 +59,11 @@ router.post(
             }
 
             const user = await User.findById(req.user.id);
+            const wallet = user.wallet;
             if(user.wallet < amount){
                 return res.status(400).json({errors: [message.INSUFFICIENT_AMOUNT]});
+            }else{
+                wallet = wallet - amount;
             }
             booking_obj = new Booking({
                 type,
@@ -76,6 +79,13 @@ router.post(
                 }]
             });                        
             booking_obj.save();
+
+            await User.update(
+                { _id: req.user.id},
+                { $set: {
+                    wallet: wallet
+                }}
+            );
             res.status(200).json(booking_obj);
         }catch(err){
             console.error(err.message);
@@ -203,8 +213,12 @@ router.put(
                  return res.status(400).json({errors: [message.MORE_NUMBER_OF_PLAYERS]});
             }
             const user = await User.findById(req.user.id);
+            wallet = user.wallet;
             if(user.wallet < amount){
                 return res.status(400).json({errors: [message.INSUFFICIENT_AMOUNT]});
+            }else{
+                wallet = user.wallet - amount;
+                console.log(wallet)
             }
 
             player = {
@@ -226,6 +240,13 @@ router.put(
                 $set: {
                     court_full : court_full_change.court_full
                 } }
+            );
+            
+            await User.update(
+                { _id: req.user.id},
+                { $set: {
+                    wallet: wallet
+                }}
             );
 
             res.status(200).json({msg : "Successful"});

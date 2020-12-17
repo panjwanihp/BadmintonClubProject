@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const message = require('../utils/enum');
 const timeCheck =  require('../api/timeCheck');
+const bookingCheck =  require('../api/bookingCheck');
 const auth = require('../middleware/auth');
 const {check , validationResult } = require('express-validator');
 
@@ -48,7 +49,7 @@ router.post(
             if(timeCheck.checkBookingOverlapforBreak(start_time,end_time,court1.court_break) || !(start_time >= court1.start_time && start_time < court1.end_time && end_time <= court1.end_time && end_time > court1.start_time)){
                 return res.status(400).json({errors: [message.BREAK_TIME_RANGE]});
             }
-
+            
             let amount = +court1.price;
 
             if(type == 1){
@@ -56,7 +57,11 @@ router.post(
             }else if(type == 2){
                 amount = amount/4;
             }
-            
+
+            const user = await User.findById(req.user.id);
+            if(user.wallet < amount){
+                return res.status(400).json({errors: [message.INSUFFICIENT_AMOUNT]});
+            }
             booking_obj = new Booking({
                 type,
                 date,
@@ -183,30 +188,45 @@ router.put(
     "/update/:booking_id",
     auth, 
     async (req,res) => {
-        const {amount,numofplayer} = req.body; 
+        const {amount} = req.body; 
+        const numofplayer = 1;
         try{
             //see if booking
             let booking = await Booking.findOne({ _id: req.params.booking_id });
             if(!booking){
                 return res.status(400).json({errors: [message.BOOKING_NOT_EXISTS]});
             }
-            if(checkPlayerAvailable(booking,req.user.id)){
+            if(bookingCheck.checkPlayerAvailable(booking,req.user.id)){
                 return res.status(400).json({errors: [message.USER_ALREADY_BOOKED]});
             }
             if(numofplayer > (parseInt(booking.type)*2 - booking.players.length)){
                  return res.status(400).json({errors: [message.MORE_NUMBER_OF_PLAYERS]});
             }
-            const court_full_change = {
-                    court_full:false
-                }
-            if(numofplayer == (parseInt(booking.type)*2 - booking.players.length)){
-                court_full_change.court_full = true;
+            const user = await User.findById(req.user.id);
+            if(user.wallet < amount){
+                return res.status(400).json({errors: [message.INSUFFICIENT_AMOUNT]});
             }
 
             player = {
                 payment : amount,
                 user : req.user.id
             }
+
+            const court_full_change = {
+                    court_full:false
+            }
+
+            if(numofplayer == (parseInt(booking.type)*2 - booking.players.length)){
+                court_full_change.court_full = true;
+            }
+            // var model = require(`../models/Booking`);
+            // Booking.update(
+            //     { _id: 1 },
+            //     { $push: { scores: 89 } }
+            // )
+
+
+
          }catch(err){
             console.error(err.message);
             return res.status(500).send(message.SERVER_ERROR);

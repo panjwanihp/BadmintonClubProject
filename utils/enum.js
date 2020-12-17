@@ -33,5 +33,6 @@ module.exports = {
     BREAK_TIME_RANGE: "Booking cannot be done in break timings",
     BOOKING_NOT_EXISTS : "Booking doesn't exsits",
     USER_ALREADY_BOOKED : "User Already booked for this booking",
-    MORE_NUMBER_OF_PLAYERS : "Booking type is exceed player, Please try again"
+    MORE_NUMBER_OF_PLAYERS : "Booking type is exceed player, Please try again",
+    INSUFFICIENT_AMOUNT:"Insuffient amount in wallet"
  }

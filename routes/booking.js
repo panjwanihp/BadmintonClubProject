@@ -59,7 +59,7 @@ router.post(
             }
 
             const user = await User.findById(req.user.id);
-            const wallet = user.wallet;
+            var wallet = user.wallet;
             if(user.wallet < amount){
                 return res.status(400).json({errors: [message.INSUFFICIENT_AMOUNT]});
             }else{
@@ -103,11 +103,56 @@ router.get(
                         $lt : timeCheck.dateFormate(new Date().setMonth(new Date().getMonth()+6))}}},
                 {$lookup : {
                     from: "courts",
-                    localField: "court",
-                    foreignField: "_id",
+                    let: { court_obj: "$court" },
+                    pipeline: [
+                        { $match: { $expr: {$eq :[ "$_id",  "$$court_obj" ] } }},
+                        {$project : {
+                            _id : 0, 
+                            start_time : 0, 
+                            end_time : 0,
+                            __v :0,
+                            court_break : 0 
+                        }}
+                    ],
                     as: "court"
                     }},
-                { $unwind :  { path:"$court" }}]);
+                { $unwind :  { path:"$court" }}, 
+                {$lookup:{
+                    from: "users", 
+                    let: { user_obj: "$players.user" },
+                    pipeline: [
+                        { $match: { $expr: {$in :[ "$_id",  "$$user_obj" ] } }},
+                        {$project : {
+                            
+                            role : 0, 
+                            status : 0,  
+                            password : 0, 
+                            date : 0, 
+                            vcode :  0, 
+                            __v :0,
+                            wallet : 0 
+                        }}
+                    ],
+                    as: "user",      
+                }
+            },
+            //  { "$addFields": {
+            //     "merged_user_info": {
+            //         "$map": {
+            //             "input": "$players",
+            //             "in": {
+            //                 "$mergeObjects": [
+            //                     "$$this",
+            //                     { "$arrayElemAt": [
+            //                         "$user._id",
+            //                         {"$indexOfArray" : ["$$this.user" , "user._id"]}
+            //                     ] }
+            //                 ] 
+            //             }
+            //         }
+            //     }
+            // } }
+            ]);
             
             // if(!booking){
             //     return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
@@ -120,6 +165,25 @@ router.get(
         }
 });
 
+router.get(
+    "/user",
+    auth, 
+    async (req,res) => {
+        try{
+            console.log(req.user.id);
+            let booking = await Booking.find({players: {$elemMatch: {user : req.user.id}}});
+
+            
+            // if(!booking){
+            //     return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
+            // }
+            //console.log(booking)
+            res.status(200).json({Length : booking.length});
+        }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+});
 
 router.get(
     "/:booking_id",
@@ -195,10 +259,10 @@ router.get(
 //         }
 // });
 router.put(
-    "/update/:booking_id",
+    "/update/:booking_id/:amounttopay",
     auth, 
     async (req,res) => {
-        const {amount} = req.body; 
+        const amount = req.params.amounttopay; 
         const numofplayer = 1;
         try{
             //see if booking

@@ -13,6 +13,7 @@ app.get('/', (req,res) => res.send('API Runing'));
 
 const PORT =  process.env.PORT || 5000;
 
+app.use('/public', express.static('public'));
 //route
 app.use('/users' , require("./routes/users"));
 app.use('/court' , require("./routes/court"));

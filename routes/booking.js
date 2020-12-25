@@ -7,11 +7,12 @@ const timeCheck =  require('../api/timeCheck');
 const bookingCheck =  require('../api/bookingCheck');
 const auth = require('../middleware/auth');
 const {check , validationResult } = require('express-validator');
-
+const sendEmail = require('../utils/send_email');
 const Booking = require('../models/Booking');
 const Court = require('../models/Court');
 const { response } = require('express');
 const User = require('../models/User');
+const moment = require('moment');
 
 router.post(
     "/", [ auth,
@@ -40,7 +41,7 @@ router.post(
             if(start_time >= end_time || (date <= timeCheck.dateFormate(new Date()))){
                 return res.status(400).json({errors: [message.INVALID_TIME_RANGE]});
             }
-            let bookings = await Booking.find({$and : [{"date" : date},{"court":court1.id}]});
+            let bookings = await Booking.find({$and : [{"date" : date},{"court":court1.id},{"status" : 1}]});
 
             if(timeCheck.checkBookingOverlapforCourt(start_time,end_time,bookings)){
                 return res.status(400).json({errors: [message.ALREADY_BOOKED_TIME_RANGE]});
@@ -49,17 +50,21 @@ router.post(
             if(timeCheck.checkBookingOverlapforBreak(start_time,end_time,court1.court_break) || !(start_time >= court1.start_time && start_time < court1.end_time && end_time <= court1.end_time && end_time > court1.start_time)){
                 return res.status(400).json({errors: [message.BREAK_TIME_RANGE]});
             }
-            
-            let amount = +court1.price;
+            var startTime=moment(start_time, "HH:mm:ss");
+            var endTime=moment(end_time, "HH:mm:ss");
+            var duration = moment.duration(endTime.diff(startTime));
+            var hours = parseFloat(duration.asHours());
 
+            let totamount = court1.price*(hours);
+            let amount = totamount;
             if(type == 1){
-                amount = amount/2;
+                amount = totamount/2;
             }else if(type == 2){
-                amount = amount/4;
+                amount = totamount/4;
             }
 
             const user = await User.findById(req.user.id);
-            const wallet = user.wallet;
+            var wallet = user.wallet;
             if(user.wallet < amount){
                 return res.status(400).json({errors: [message.INSUFFICIENT_AMOUNT]});
             }else{
@@ -72,13 +77,14 @@ router.post(
                 end_time,
                 court_full: type == 0? true: false,
                 court: court1.id,
+                amount: totamount,
                 players: [{
                     payment: amount,
                     user: req.user.id
                     
                 }]
             });                        
-            booking_obj.save();
+           booking_obj.save();
 
             await User.update(
                 { _id: req.user.id},
@@ -86,7 +92,32 @@ router.post(
                     wallet: wallet
                 }}
             );
-            res.status(200).json(booking_obj);
+            const mail_obj = {
+                type : type,
+                date : date,
+                start_time:start_time,
+                end_time:end_time,
+                court: 'Court '+court1.court_name,
+                court_price : court1.price,
+                amount : totamount
+            }
+            var newBooking = null;
+            if(type == '0'){
+                newBooking = new sendEmail(user, 'newBookingEntire', mail_obj)
+            }else{
+                newBooking = new sendEmail(user, 'newBooking', mail_obj)
+            }
+            newBooking.emailNewBooking()
+                .then(sent => {
+                    sent.message = message.SUCCESSFULL_REGISTRATION;
+                    return res.status(200).json({"msg":message.EMAIL_SENT, "booking":booking_obj});
+                })
+                .catch(sentErr => {
+                    console.log(sentErr);
+                    return res.status(200).json({"msg":message.SERVER_ERROR, "booking":booking_obj});
+                })
+
+            
         }catch(err){
             console.error(err.message);
             return res.status(500).send(message.SERVER_ERROR);
@@ -100,14 +131,59 @@ router.get(
         try{
             let booking = await Booking.aggregate([
                 {$match : {"date" : {$gte : timeCheck.dateFormate(new Date()),
-                        $lt : timeCheck.dateFormate(new Date().setMonth(new Date().getMonth()+6))}}},
+                        $lt : timeCheck.dateFormate(new Date().setMonth(new Date().getMonth()+6))} , "status" : 1}},
                 {$lookup : {
                     from: "courts",
-                    localField: "court",
-                    foreignField: "_id",
+                    let: { court_obj: "$court" },
+                    pipeline: [
+                        { $match: { $expr: {$eq :[ "$_id",  "$$court_obj" ] } }},
+                        {$project : {
+                            _id : 0, 
+                            start_time : 0, 
+                            end_time : 0,
+                            __v :0,
+                            court_break : 0 
+                        }}
+                    ],
                     as: "court"
                     }},
-                { $unwind :  { path:"$court" }}]);
+                { $unwind :  { path:"$court" }}, 
+                {$lookup:{
+                    from: "users", 
+                    let: { user_obj: "$players.user" },
+                    pipeline: [
+                        { $match: { $expr: {$in :[ "$_id",  "$$user_obj" ] } }},
+                        {$project : {
+                            
+                            role : 0, 
+                            status : 0,  
+                            password : 0, 
+                            date : 0, 
+                            vcode :  0, 
+                            __v :0,
+                            wallet : 0 
+                        }}
+                    ],
+                    as: "user",      
+                }
+            },
+            //  { "$addFields": {
+            //     "merged_user_info": {
+            //         "$map": {
+            //             "input": "$players",
+            //             "in": {
+            //                 "$mergeObjects": [
+            //                     "$$this",
+            //                     { "$arrayElemAt": [
+            //                         "$user._id",
+            //                         {"$indexOfArray" : ["$$this.user" , "user._id"]}
+            //                     ] }
+            //                 ] 
+            //             }
+            //         }
+            //     }
+            // } }
+            ]);
             
             // if(!booking){
             //     return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
@@ -120,6 +196,25 @@ router.get(
         }
 });
 
+router.get(
+    "/userLength",
+    auth, 
+    async (req,res) => {
+        try{
+            console.log(req.user.id);
+            let booking = await Booking.find({players: {$elemMatch: {user : req.user.id}}, status : 1 });
+
+            
+            // if(!booking){
+            //     return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
+            // }
+            //console.log(booking)
+            res.status(200).json({Length : booking.length});
+        }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+});
 
 router.get(
     "/:booking_id",
@@ -195,14 +290,16 @@ router.get(
 //         }
 // });
 router.put(
-    "/update/:booking_id",
+    "/update/:booking_id/:amounttopay",
     auth, 
     async (req,res) => {
-        const {amount} = req.body; 
+        const amount = req.params.amounttopay; 
         const numofplayer = 1;
         try{
+            const { playersBooked } =req.body
             //see if booking
             let booking = await Booking.findOne({ _id: req.params.booking_id });
+            let court1 = await Court.findOne({ _id: booking.court });
             if(!booking){
                 return res.status(400).json({errors: [message.BOOKING_NOT_EXISTS]});
             }
@@ -248,8 +345,41 @@ router.put(
                     wallet: wallet
                 }}
             );
-
-            res.status(200).json({msg : "Successful"});
+            const mail_obj = {
+                type : booking.type,
+                date : booking.date,
+                start_time:booking.start_time,
+                end_time:booking.end_time,
+                court: 'Court '+court1.court_name,
+                court_price : court1.price,
+                amount : amount,
+                players : playersBooked
+            }
+            var joinParty = null;
+            if(parseInt(booking.type)*2 - booking.players.length - 1){
+               joinParty = new sendEmail(user, 'joinParty', mail_obj)
+                joinParty.emailNewBooking()
+                .then(sent => {
+                    sent.message = message.SUCCESSFULL_REGISTRATION;
+                    return res.status(200).json({"msg_email":message.EMAIL_SENT, "msg":"Successful"});
+                })
+                .catch(sentErr => {
+                    console.log(sentErr);
+                    return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
+                })
+            }else{
+                joinParty = new sendEmail(user, 'joinPartyComplete', mail_obj)
+                joinParty.emailNewBooking()
+                .then(sent => {
+                    sent.message = message.SUCCESSFULL_REGISTRATION;
+                    return res.status(200).json({"msg_email":message.EMAIL_SENT, "msg":"Successful"});
+                })
+                .catch(sentErr => {
+                    console.log(sentErr);
+                    return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
+                })
+            }
+           
 
          }catch(err){
             console.error(err.message);

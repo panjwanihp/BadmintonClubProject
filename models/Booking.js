@@ -27,6 +27,11 @@ const bookingSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'courts'
     },
+    amount:{
+        type: Number, 
+        required: true
+    },
+    status: { type: Number, required: false, default: 1 },
     players:[
         {
           user:{

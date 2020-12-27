@@ -1,6 +1,6 @@
 const express = require('express')
 const connectDB =  require('./config/db');
-
+const cron = require('node-cron');
 const app = express()
 
 //ConnectDB
@@ -8,6 +8,9 @@ connectDB();
 
 //Init Middleware
 app.use(express.json({extended: false}));
+cron.schedule('* * * * *', function() {
+  console.log('running a task every minute');
+});
 
 app.get('/', (req,res) => res.send('API Runing')); 
 

@@ -11,7 +11,7 @@ const sendEmail = require('../utils/send_email');
 const updateUser =  require('../api/updateUser');
 const verifcationController = require('../api/verification');
 const {check , validationResult } = require('express-validator');
-
+const fs = require('fs')
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
@@ -216,7 +216,16 @@ router.post(
 
         try{
             const url = req.protocol + '://' + req.get('host')
-            console.log(req.file)
+    
+            const user = await User.findOne({ _id: req.user.id});
+      
+            const deletepicture = user.avatar.split('/');
+            try{
+                fs.unlinkSync('public/'+deletepicture[4]);
+                
+            }catch(err){
+                console.log(err);
+            }
             const response = await User.update(
                 { _id: req.user.id},
                 { $set: {

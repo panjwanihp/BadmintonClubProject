@@ -8,9 +8,9 @@ connectDB();
 
 //Init Middleware
 app.use(express.json({extended: false}));
-cron.schedule('* * * * *', function() {
-  console.log('running a task every minute');
-});
+// cron.schedule('* * * * *', function() {
+//  // console.log('running a task every minute');
+// });
 
 app.get('/', (req,res) => res.send('API Runing')); 
 

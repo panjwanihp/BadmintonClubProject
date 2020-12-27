@@ -32,7 +32,7 @@ router.post(
         const {type,date, start_time, end_time, court} = req.body;
         try{
             // let booking = await Booking.findOne({ court_name: court }); 
-            console.log(req.user.id);
+           // console.log(req.user.id);
             let court1 = await Court.findOne({ court_name: court });
             
             if(!court1){
@@ -210,6 +210,26 @@ router.get(
             // }
             //console.log(booking)
             res.status(200).json({Length : booking.length});
+        }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+});
+router.get(
+    "/userLength/:userId",
+    auth, 
+    async (req,res) => {
+        try{
+            console.log(req.params.userId);
+            let booking = await Booking.find({players: {$elemMatch: {user : req.params.userId}}, status : 1 });
+            let canceledbooking = await Booking.find({players: {$elemMatch: {user : req.params.userId}}, status : 0 });
+
+            
+            // if(!booking){
+            //     return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
+            // }
+            //console.log(booking)
+            res.status(200).json({Length : booking.length, canceledLength : canceledbooking.length});
         }catch(err){
             console.error(err.message);
             return res.status(500).send(message.SERVER_ERROR);

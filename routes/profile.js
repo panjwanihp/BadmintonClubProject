@@ -10,9 +10,9 @@ const User = require('../models/User');
 // @access  Public
 router.get('/', auth,  async (req, res) => {
 	try{
-		const profiles = await User.find().populate('user',
-		['_id','name']);
-		res.json(profiles);
+        const profiles = await User.aggregate([{$match : { role: {$eq : "Member"  }}},
+            {$project : {_id : 1 ,name : 1 ,status : 1}}]);
+		res.status(200).send(profiles);
 	}
 	catch (err) {
 		console.error(err.message);
@@ -26,9 +26,44 @@ router.get('/', auth,  async (req, res) => {
 // @access  Public
 router.get('/user/:user_id', async (req, res) => {
 	try{
-		const user = await User.findOne({ user: req.params._id});
+        console.log("user"+req.params.user_id)
+		const user = await User.findOne({ _id: req.params.user_id});
        
-		res.json(user);
+		res.status(200).send(user);
+	}
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
+	}
+});
+
+// @route   GET profile/approve/:user_id
+// @desc    Get user by user ID
+// @access  Public
+router.get('/approve/:user_id', async (req, res) => {
+	try{
+		await User.updateOne({ _id: req.params.user_id},{ $set: {
+                status: 2
+            }});
+       
+		res.status(200).send("successful");
+	}
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
+	}
+});
+
+// @route   GET profile/unapprove/:user_id
+// @desc    Get user by user ID
+// @access  Public
+router.get('/unapprove/:user_id', async (req, res) => {
+	try{
+		await User.updateOne({ _id: req.params.user_id},{ $set: {
+                status: 1
+            }});
+       
+		res.status(200).send("successful");
 	}
 	catch (err) {
 		console.error(err.message);

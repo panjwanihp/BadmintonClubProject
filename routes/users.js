@@ -112,7 +112,7 @@ router.post(
             return res.status(400).json({errors:errors.array()});
         }
         //res.send("user routes")
-        const {name, email, password, phone} = req.body;
+        const {name, email, password, phone , level} = req.body;
         try{
             //see if user exist
             let user = await User.findOne({ email });
@@ -133,7 +133,8 @@ router.post(
                 email,
                 avatar,
                 password,
-                phone
+                phone,
+                level
             });
             
             //encrypt password
@@ -154,23 +155,23 @@ router.post(
                                 console.log(sentErr);
                                 return sentErr;
                             })
-                user.save()
-                const payload = {
-                    user: {
-                        id: user.id
-                    }
-                };
-                jwt.sign(
-                    payload,
-                    config.get("jwtToken"),
-                    {
-                        expiresIn: 36000
-                    },
-                    (err , token) =>{
-                        if(err) throw err;
-                        res.json({token});
-                    }
-                );
+            user.save()
+            const payload = {
+                user: {
+                    id: user.id
+                }
+            };
+            jwt.sign(
+                payload,
+                config.get("jwtToken"),
+                {
+                    expiresIn: 86400
+                },
+                (err , token) =>{
+                    if(err) throw err;
+                    res.json({token});
+                }
+            );
             
         }catch(err){
             console.error(err.message);

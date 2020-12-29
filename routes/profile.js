@@ -24,7 +24,7 @@ router.get('/', auth,  async (req, res) => {
 // @route   GET profile/user/:user_id
 // @desc    Get user by user ID
 // @access  Public
-router.get('/user/:user_id', async (req, res) => {
+router.get('/user/:user_id',auth, async (req, res) => {
 	try{
         console.log("user"+req.params.user_id)
 		const user = await User.findOne({ _id: req.params.user_id});
@@ -40,7 +40,7 @@ router.get('/user/:user_id', async (req, res) => {
 // @route   GET profile/approve/:user_id
 // @desc    Get user by user ID
 // @access  Public
-router.get('/approve/:user_id', async (req, res) => {
+router.get('/approve/:user_id', auth,  async (req, res) => {
 	try{
 		await User.updateOne({ _id: req.params.user_id},{ $set: {
                 status: 2
@@ -64,10 +64,23 @@ router.get('/approve/:user_id', async (req, res) => {
 	}
 });
 
+router.get('/level/:newlevel', auth,  async (req, res) => {
+	try{
+		await User.updateOne({ _id: req.user.id},{ $set: {
+                level: req.params.newlevel
+            }});
+		res.status(200).send("successful");
+	}
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
+	}
+});
+
 // @route   GET profile/unapprove/:user_id
 // @desc    Get user by user ID
 // @access  Public
-router.get('/unapprove/:user_id', async (req, res) => {
+router.get('/unapprove/:user_id', auth,  async (req, res) => {
 	try{
 		await User.updateOne({ _id: req.params.user_id},{ $set: {
                 status: 1

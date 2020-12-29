@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
         }
     },
     role: { type: String, required: false, default: "Member" },
+    level: { type: String, required: false, default: "Basic" },
     status: { type: Number, required: false, default: 0 },
     vcode: { type: String, required: false },
     date:{

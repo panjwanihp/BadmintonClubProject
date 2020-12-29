@@ -85,4 +85,17 @@ router.post('/check-payement/:sessionId',auth, async (req, res) => {
   }
 });
 
+router.get('/:wallet_id', auth,  async (req, res) => {
+	try{
+		await User.updateOne({ _id: req.user.id},{ $set: {
+                level: req.params.newlevel
+            }});
+		res.status(200).send("successful");
+	}
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
+	}
+});
+
 module.exports = router;

@@ -85,10 +85,10 @@ router.post('/check-payement/:sessionId',auth, async (req, res) => {
   }
 });
 
-router.get('/:wallet_id', auth,  async (req, res) => {
+router.get('/:userid/:wallet', auth,  async (req, res) => {
 	try{
-		await User.updateOne({ _id: req.user.id},{ $set: {
-                level: req.params.newlevel
+		await User.updateOne({ _id: req.params.userid},{ $set: {
+                wallet: req.params.wallet
             }});
 		res.status(200).send("successful");
 	}

@@ -2,7 +2,7 @@ const express = require('express');
 const auth = require('../middleware/auth');
 const router = express.Router();
 const message = require('../utils/enum');
-
+const sendEmail = require('../utils/send_email');
 const User = require('../models/User');
 
 // @route   GET /profile

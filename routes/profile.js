@@ -77,18 +77,6 @@ router.get('/level/:newlevel', auth,  async (req, res) => {
 	}
 });
 
-router.get('/level/:id/:newlevel', auth,  async (req, res) => {
-	try{
-		await User.updateOne({ _id: req.params.id},{ $set: {
-                level: req.params.newlevel
-            }});
-		res.status(200).send("successful");
-	}
-	catch (err) {
-		console.error(err.message);
-		res.status(500).send('Server Error');
-	}
-});
 
 // @route   GET profile/unapprove/:user_id
 // @desc    Get user by user ID

@@ -45,7 +45,17 @@ router.get('/approve/:user_id', async (req, res) => {
 		await User.updateOne({ _id: req.params.user_id},{ $set: {
                 status: 2
             }});
-       
+        const user =await User.findById(req.params.user_id);
+        const Approved = new sendEmail(user, 'accountActivated', '')
+        Approved.emailActivated()
+                .then(sent => {
+                    sent.message = message.SUCCESSFULL_REGISTRATION;
+                    return res.status(200).json({"msg_email":message.EMAIL_SENT, "msg":"Successful"});
+                })
+                .catch(sentErr => {
+                    console.log(sentErr);
+                    return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
+                })
 		res.status(200).send("successful");
 	}
 	catch (err) {

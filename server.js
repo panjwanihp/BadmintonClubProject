@@ -1,15 +1,20 @@
 const express = require('express')
 const connectDB =  require('./config/db');
-const cron = require('node-cron');
+// const cron = require('node-cron');
 const app = express()
+
 
 //ConnectDB
 connectDB();
 
+
 //Init Middleware
 app.use(express.json({extended: false}));
 // cron.schedule('* * * * *', function() {
-//  // console.log('running a task every minute');
+//     var datetime = new Date();
+//     console.log(datetime.toLocaleTimeString())
+//     console.log(datetime.toLocaleDateString());
+//     let bookings = await Booking.find({$and : [{"date" : date},{"court_full":false},{"status" : 1}]});
 // });
 
 app.get('/', (req,res) => res.send('API Runing')); 

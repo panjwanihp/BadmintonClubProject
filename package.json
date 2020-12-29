@@ -25,6 +25,7 @@
     "rand-token": "^1.0.1",
     "request": "^2.88.2",
     "stripe": "^8.129.0",
+    "time": "^0.12.0",
     "uuidv4": "^6.2.6"
   },
   "devDependencies": {

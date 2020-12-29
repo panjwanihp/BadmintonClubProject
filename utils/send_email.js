@@ -32,6 +32,30 @@ class sendEmail {
         })
     }
 
+    emailActivated() {
+        return new Promise((resolve, reject) => {
+            var emailContent = require(`../emailTemplate/${this.type}`)
+            var response = {};
+            var mailOpts = {
+                from: keys.mailer.user,
+                to: this.reciever.email,
+                subject: emailContent.subject,
+                text: `${emailContent.body}`
+            };
+            Transporter.sendMail(mailOpts, function (error, info) {
+                if (error) {
+                    response.error = error;
+                    return new sendEmail().failureHandler(response, reject);
+                }
+                else {
+                    response.result = 'Success';
+                    response.code = 201;
+                    return resolve(response)
+                }
+            });
+        })
+    }
+
     emailNewBooking(){
         return new Promise((resolve, reject) => {
             var emailContent = require(`../emailTemplate/${this.type}`)

@@ -365,6 +365,7 @@ router.put(
                     wallet: wallet
                 }}
             );
+            
             const mail_obj = {
                 type : booking.type,
                 date : booking.date,
@@ -388,16 +389,22 @@ router.put(
                     return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
                 })
             }else{
-                joinParty = new sendEmail(user, 'joinPartyComplete', mail_obj)
-                joinParty.emailNewBooking()
-                .then(sent => {
-                    sent.message = message.SUCCESSFULL_REGISTRATION;
-                    return res.status(200).json({"msg_email":message.EMAIL_SENT, "msg":"Successful"});
-                })
-                .catch(sentErr => {
-                    console.log(sentErr);
-                    return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
-                })
+                const playersBookedobj = playersBooked.split('\n');
+                for(var i = 0; i<playersBookedobj.length ; i++){
+                    var parametervar = playersBookedobj.split('\t')
+                    var newuser = {email : parametervar[1]}
+                    joinParty = new sendEmail(newuser, 'joinPartyComplete', mail_obj)
+                    joinParty.emailNewBooking()
+                        .then(sent => {
+                        sent.message = message.SUCCESSFULL_REGISTRATION;
+                        return res.status(200).json({"msg_email":message.EMAIL_SENT, "msg":"Successful"});
+                    })
+                        .catch(sentErr => {
+                        console.log(sentErr);
+                        return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
+                    })
+                }
+                
             }
            
 

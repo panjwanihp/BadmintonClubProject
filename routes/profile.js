@@ -56,7 +56,7 @@ router.get('/approve/:user_id', auth,  async (req, res) => {
                     console.log(sentErr);
                     return res.status(200).json({"msg_email":message.SERVER_ERROR, "msg":"Successful"});
                 })
-		res.status(200).send("successful");
+		
 	}
 	catch (err) {
 		console.error(err.message);

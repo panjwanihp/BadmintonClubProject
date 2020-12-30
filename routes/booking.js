@@ -13,6 +13,7 @@ const Court = require('../models/Court');
 const { response } = require('express');
 const User = require('../models/User');
 const moment = require('moment');
+var mongoose = require('mongoose');
 
 router.post(
     "/", [ auth,
@@ -260,7 +261,44 @@ router.get(
     async (req,res) => {        
         try{
             //see if court exist
-            let booking = await Booking.find({"date" : req.params.booking_date});
+            console.log(req.params.booking_date.toString())
+            let booking = await Booking.aggregate([
+                {$match : {"date" : req.params.booking_date.toString()}},
+                {$lookup : {
+                    from: "courts",
+                    let: { court_obj: "$court" },
+                    pipeline: [
+                        { $match: { $expr: {$eq :[ "$_id",  "$$court_obj" ] } }},
+                        {$project : {
+                            _id : 0, 
+                            start_time : 0, 
+                            end_time : 0,
+                            __v :0,
+                            court_break : 0 
+                        }}
+                    ],
+                    as: "court"
+                    }},
+                { $unwind :  { path:"$court" }}, 
+                {$lookup:{
+                    from: "users", 
+                    let: { user_obj: "$players.user" },
+                    pipeline: [
+                        { $match: { $expr: {$in :[ "$_id",  "$$user_obj" ] } }},
+                        {$project : {
+                            role : 0, 
+                            status : 0,  
+                            password : 0, 
+                            date : 0, 
+                            vcode :  0, 
+                            __v :0,
+                            wallet : 0 
+                        }}
+                    ],
+                    as: "user",      
+                }
+            },
+            ]);
             
             if(!booking){
                 return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
@@ -272,6 +310,176 @@ router.get(
         }
 });
 
+router.get(
+    "/email/:email",
+    auth, 
+    async (req,res) => {        
+        try{
+            //see if court exist
+            
+            const user = await User.findOne({email : req.params.email});
+            console.log(user)
+            let booking = await Booking.aggregate([
+                {$match : {"players" : {
+                    "$elemMatch" : { "user" : user._id }
+                }}},
+                {$lookup : {
+                    from: "courts",
+                    let: { court_obj: "$court" },
+                    pipeline: [
+                        { $match: { $expr: {$eq :[ "$_id",  "$$court_obj" ] } }},
+                        {$project : {
+                            _id : 0, 
+                            start_time : 0, 
+                            end_time : 0,
+                            __v :0,
+                            court_break : 0 
+                        }}
+                    ],
+                    as: "court"
+                    }},
+                { $unwind :  { path:"$court" }}, 
+                {$lookup:{
+                    from: "users", 
+                    let: { user_obj: "$players.user" },
+                    pipeline: [
+                        { $match: { $expr: {$in :[ "$_id",  "$$user_obj" ] } }},
+                        {$project : {
+                            role : 0, 
+                            status : 0,  
+                            password : 0, 
+                            date : 0, 
+                            vcode :  0, 
+                            __v :0,
+                            wallet : 0 
+                        }}
+                    ],
+                    as: "user",      
+                }
+            },
+            ]);
+            
+            if(!booking){
+                return res.status(400).json({errors: [message.USER_NOT_EXISTS]});
+            }
+            res.status(200).json(booking);
+        }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+});
+
+
+router.get(
+    "/court/:courtid",
+    auth, 
+    async (req,res) => {        
+        try{
+            //see if court exist
+            const castUserId = mongoose.Types.ObjectId(req.params.courtid)
+            console.log(req.params.courtid)
+            let booking = await Booking.aggregate([
+                {$match : {"court" : castUserId }},
+                {$lookup : {
+                    from: "courts",
+                    let: { court_obj: "$court" },
+                    pipeline: [
+                        { $match: { $expr: {$eq :[ "$_id",  "$$court_obj" ] } }},
+                        {$project : {
+                            _id : 0, 
+                            start_time : 0, 
+                            end_time : 0,
+                            __v :0,
+                            court_break : 0 
+                        }}
+                    ],
+                    as: "court"
+                    }},
+                { $unwind :  { path:"$court" }}, 
+                {$lookup:{
+                    from: "users", 
+                    let: { user_obj: "$players.user" },
+                    pipeline: [
+                        { $match: { $expr: {$in :[ "$_id",  "$$user_obj" ] } }},
+                        {$project : {
+                            role : 0, 
+                            status : 0,  
+                            password : 0, 
+                            date : 0, 
+                            vcode :  0, 
+                            __v :0,
+                            wallet : 0 
+                        }}
+                    ],
+                    as: "user",      
+                }
+            },
+            ]);
+            
+            if(!booking){
+                return res.status(400).json({errors: [message.USER_NOT_EXISTS]});
+            }
+            res.status(200).json(booking);
+        }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+});
+
+router.get(
+    "/type/:type",
+    auth, 
+    async (req,res) => {        
+        try{
+            //see if court exist
+            console.log(req.params.type)
+            let booking = await Booking.aggregate([
+                {$match : {"type" : parseInt(req.params.type)}},
+                {$lookup : {
+                    from: "courts",
+                    let: { court_obj: "$court" },
+                    pipeline: [
+                        { $match: { $expr: {$eq :[ "$_id",  "$$court_obj" ] } }},
+                        {$project : {
+                            _id : 0, 
+                            start_time : 0, 
+                            end_time : 0,
+                            __v :0,
+                            court_break : 0 
+                        }}
+                    ],
+                    as: "court"
+                    }},
+                { $unwind :  { path:"$court" }}, 
+                {$lookup:{
+                    from: "users", 
+                    let: { user_obj: "$players.user" },
+                    pipeline: [
+                        { $match: { $expr: {$in :[ "$_id",  "$$user_obj" ] } }},
+                        {$project : {
+                            role : 0, 
+                            status : 0,  
+                            password : 0, 
+                            date : 0, 
+                            vcode :  0, 
+                            __v :0,
+                            wallet : 0 
+                        }}
+                    ],
+                    as: "user",      
+                }
+            },
+            ]);
+            
+            if(!booking){
+                return res.status(400).json({errors: [message.COURT_NOT_EXISTS]});
+            }
+            res.status(200).json(booking);
+        }catch(err){
+            console.error(err.message);
+            return res.status(500).send(message.SERVER_ERROR);
+        }
+});
 // router.put(
 //     "/update/:booking_id",
 //     auth, 
